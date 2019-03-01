@@ -1,0 +1,28 @@
+run:
+  concurrency: 2
+  deadline: 1m
+  skip-dirs:
+    - vendor
+    - docs
+    - script
+    - releases
+    - design
+linters:
+  disable-all: true
+  enable:
+    - gofmt
+    - goimports
+    - golint
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - unconvert
+    - varcheck
+issues:
+  exclude-rules:
+    # TODO (EH): seems like an upstream bug - https://github.com/golangci/golangci-lint/issues/414 - would have to read more about the
+    # expected reflection code. For ctr image push, Display uses Bar which has this issue.
+    - text: "Fprintf format %40r has unknown verb r"
+      linters:
+        - govet

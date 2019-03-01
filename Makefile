@@ -113,14 +113,13 @@ BINARIES=$(addprefix bin/,$(COMMANDS))
 TESTFLAGS ?= -v $(TESTFLAGS_RACE)
 TESTFLAGS_PARALLEL ?= 8
 
-.PHONY: clean all AUTHORS build binaries test integration generate protos checkprotos coverage ci check help install uninstall vendor release mandir install-man
+.PHONY: clean all AUTHORS build binaries test integration generate protos checkprotos coverage ci check lint proto-fmt help install uninstall vendor release mandir install-man
 .DEFAULT: default
 
 all: binaries
 
-check: proto-fmt ## run all linters
+check: proto-fmt lint ## check proto file formats and run linters
 	@echo "$(WHALE) $@"
-	gometalinter --config .gometalinter.json ./...
 
 ci: check binaries checkprotos coverage coverage-integration ## to be used by the CI
 
@@ -141,11 +140,14 @@ check-protos: protos ## check if protobufs needs to be generated again
 		((git diff | cat) && \
 		(echo "$(ONI) please run 'make protos' when making changes to proto files" && false))
 
-check-api-descriptors: protos ## check that protobuf changes aren't present.
+check-api-descriptors: protos ## check that protobuf changes aren't present
 	@echo "$(WHALE) $@"
 	@test -z "$$(git status --short | grep ".pb.txt" | tee /dev/stderr)" || \
 		((git diff $$(find . -name '*.pb.txt') | cat) && \
 		(echo "$(ONI) please run 'make protos' when making changes to proto files and check-in the generated descriptor file changes" && false))
+
+lint: ## run linters
+	golangci-lint run
 
 proto-fmt: ## check format of proto files
 	@echo "$(WHALE) $@"
